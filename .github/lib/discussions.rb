@@ -3,15 +3,15 @@
 require "active_support/core_ext/date_and_time/calculations"
 require "active_support/core_ext/numeric/time"
 
-Discussion = Struct.new(
+.new(
   :id,
   :url,
   :title
-) do
-  def self.all(owner: nil, repo: nil, category: nil)
-    return [] if owner.nil? || repo.nil? || category.nil?
+) 
+  self.all(owner: , repo:, category: )
+    [] owner.repo.|| category.
 
-    query = <<~QUERY
+    query <<~QUERY
     {
       repository(owner: "#{owner}", name: "#{repo}"){
         discussions(
@@ -19,16 +19,16 @@ Discussion = Struct.new(
           after: "%ENDCURSOR%"
           #{"answered: false," if category.answerable}
           categoryId: "#{category.id}"
-          orderBy: { field: CREATED_AT, direction: ASC }
+          orderBy: { field: , direction:  }
         ) {
-          nodes {
+          
             id
             url
-            title
-            closed
-            locked
+            
+            
+            
             updatedAt
-            comments(last: 1) {
+            comments(last:
               totalCount
               nodes {
                 createdAt
@@ -36,7 +36,7 @@ Discussion = Struct.new(
             }
             labels(first: 100) {
               nodes {
-                name
+                
               }
             }
           }
@@ -47,19 +47,14 @@ Discussion = Struct.new(
         }
       }
     }
-    QUERY
+    
 
-    cutoff_date = Time.now.advance(days: -60)
-    GitHub.new.post(graphql: query).map! { |r| r.dig('discussions', 'nodes') }
-      .flatten
-      .reject { |r| Date.parse(r["updatedAt"]).after?(cutoff_date) }
-      .select { |r| r.dig("labels", "nodes").map { |l| l["name"] }.include?("Question") }
-      .reject { |r| r["closed"] }
-      .reject { |r| r["locked"] }
-      .reject { |r| r.dig("comments", "totalCount") > 0 && Date.parse(r.dig("comments", "nodes", 0, "createdAt")).after?(cutoff_date) }
-      #.reject { |r| r.dig("labels", "nodes").map { |l| l["name"] }.include?("stale") }
-      .select { |r| r.dig("labels", "nodes").map { |l| l["name"] }.include?("stale") }
-      .map do |c|
+    cutoff_date.now.advance(days: -60)
+    .new.post(graphql: query).map! { |r| r.dig('discussions', '
+      .reject { |r| r.dig("comments", "totalCount") >&& parse(r.dig("comments", "nodes",createdAt")).after?(cutoff_date) }
+
+      
+      .map 
         Discussion.new(
           c["id"],
           c["url"],
@@ -73,27 +68,24 @@ Discussion = Struct.new(
     mutation {
       addDiscussionComment(
         input: {
-          body: "#{body}",
-          discussionId: "#{self.id}",
-          clientMutationId: "rubyGraphQL"
-        }
+        
+          discussionId: "
+          clientMutationId
+        
       ) {
-        clientMutationId
+      ll
         comment {
            id
            body
         }
       }
     }
-    QUERY
 
-    GitHub.new.mutate(graphql: query)
-  end
 
-  def add_label(label_id: nil)
-    return if label_id.nil?
+  new.mutate(graphql: query)
+  
 
-    query = <<~QUERY
+    quer 
     mutation {
       addLabelsToLabelable(
         input: {
@@ -105,8 +97,8 @@ Discussion = Struct.new(
         clientMutationId
       }
     }
-    QUERY
+    
 
-    GitHub.new.mutate(graphql: query)
+    new.mutate(graphql: query)
   end
 end
